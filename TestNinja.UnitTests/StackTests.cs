@@ -12,9 +12,9 @@ namespace TestNinja.UnitTests {
     [TestFixture]
     class StackTests {
         [Test]
-        [TestCase(new int[] {})]
+        [TestCase(new int[] { })]
         [TestCase(new int[] { 1, 2 })]
-        public void Count_AfterElementsAdded_ReturnTheNumberOfElementsAdded(int[] items) {
+        public void Count_AfterElementsPushed_ReturnTheNumberOfElementsAdded(int[] items) {
             var stack = new Stack<int>();
 
             foreach (var item in items) {
@@ -32,7 +32,7 @@ namespace TestNinja.UnitTests {
         }
 
         [Test]
-        public void PopAndPeek_ListIsEmpty_ThrowInvalidOperationException() {
+        public void PopAndPeek_EmptyStack_ThrowInvalidOperationException() {
             var stack = new Stack<string>();
 
             Assert.That(() => stack.Pop(), Throws.InvalidOperationException);
@@ -40,7 +40,7 @@ namespace TestNinja.UnitTests {
         }
 
         [Test]
-        public void Pop_PopFromStack_OriginalCountSubtractedBy1() {
+        public void Pop_StackWithFewObjects_OriginalCountSubtractedBy1() {
             var stack = new Stack<string>();
 
             stack.Push("asd");
@@ -51,20 +51,48 @@ namespace TestNinja.UnitTests {
 
             stack.Pop();
 
-            Assert.That(stack.Count, Is.EqualTo(count-1));
+            Assert.That(stack.Count, Is.EqualTo(count - 1));
         }
 
         [Test]
-        public void PushAndPop_PushingAndPopping_LastInFirstOut() {
+        [TestCase(new int[] { 1, 4, 1, 60 })]
+        [TestCase(new int[] { 10, 21 })]
+        [TestCase(new int[] { 1023, 0, 10 })]
+        public void Pop_StackWithFewObjects_ReturnTheObjectOnTop(int[] inputArray) {
             var stack = new Stack<int>();
+            foreach (var number in inputArray) {
+                stack.Push(number);
+            }
 
-            stack.Push(10);
-            stack.Push(115);
-            stack.Push(30);
+            var result = inputArray.Last();
 
-            var result = stack.Pop();
+            Assert.That(result, Is.EqualTo(result));
+        }
 
-            Assert.That(result, Is.EqualTo(30));
+        [Test]
+        public void Peek_StackWithFewObjects_DoesNotRemoveObject() {
+            var stack = new Stack<string>();
+
+            stack.Push("a");
+            stack.Push("b");
+            stack.Push("c");
+
+            stack.Peek();
+
+            Assert.That(stack.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Peek_StackWithFewObjects_ReturnTheObjectOnTop() {
+            var stack = new Stack<string>();
+
+            stack.Push("a");
+            stack.Push("b");
+            stack.Push("c");
+
+            var result = stack.Peek();
+
+            Assert.That(result, Is.EqualTo("c"));
         }
     }
 }
