@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TestNinja.Mocking
-{
-    public static class BookingHelper
-    {
-        public static string OverlappingBookingsExist(Booking booking)
-        {
-            if (booking.Status == "Cancelled")
-                return string.Empty;
+namespace TestNinja.Mocking {
+    public interface IBookingRepository {
+        Booking GetOverlappingBooking(Booking booking);
+    }
 
-            var unitOfWork = new UnitOfWork();
+    public class BookingRepository : IBookingRepository {
+        private UnitOfWork _unitOfWork;
+
+        public BookingRepository() {
+            _unitOfWork = new UnitOfWork();
+        }
+
+        public Booking GetOverlappingBooking(Booking booking) {
             var bookings =
-                unitOfWork.Query<Booking>()
+                _unitOfWork.Query<Booking>()
                     .Where(
                         b => b.Id != booking.Id && b.Status != "Cancelled");
 
@@ -25,20 +28,28 @@ namespace TestNinja.Mocking
                         || booking.DepartureDate > b.ArrivalDate
                         && booking.DepartureDate <= b.DepartureDate);
 
+            return overlappingBooking;
+        }
+    }
+
+    public static class BookingHelper {
+        public static string OverlappingBookingsExist(IBookingRepository bookingRepository, Booking booking) {
+            if (booking.Status == "Cancelled")
+                return string.Empty;
+
+            var overlappingBooking = bookingRepository.GetOverlappingBooking(booking);
+
             return overlappingBooking == null ? string.Empty : overlappingBooking.Reference;
         }
     }
 
-    public class UnitOfWork
-    {
-        public IQueryable<T> Query<T>()
-        {
+    public class UnitOfWork {
+        public IQueryable<T> Query<T>() {
             return new List<T>().AsQueryable();
         }
     }
 
-    public class Booking
-    {
+    public class Booking {
         public string Status { get; set; }
         public int Id { get; set; }
         public DateTime ArrivalDate { get; set; }
