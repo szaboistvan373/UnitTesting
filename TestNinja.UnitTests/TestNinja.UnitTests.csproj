@@ -75,6 +75,7 @@
     <Compile Include="MathTests.cs" />
     <Compile Include="Mocking\BookingHelper_OverlappingBookingsExist_Tests.cs" />
     <Compile Include="Mocking\EmployeeControllerTests.cs" />
+    <Compile Include="Mocking\HouseKeeperHelperTests.cs" />
     <Compile Include="Mocking\InstallerHelperTests.cs" />
     <Compile Include="Mocking\OrderServiceTests.cs" />
     <Compile Include="Mocking\ProductTests.cs" />
