@@ -1,19 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TestNinja.Mocking.HouseKeeper {
-    public interface IHouseKeeperRepository {
-        IEnumerable<Housekeeper> GetHousekeepers();
+    public interface IUnitOfWork {
+        IQueryable<T> Query<T>();
     }
 
-    public class HouseKeeperRepository : IHouseKeeperRepository {
-        private readonly UnitOfWork _unitOfWork;
-
-        public HouseKeeperRepository() {
-            _unitOfWork = new UnitOfWork();
-        }
-
-        public IEnumerable<Housekeeper> GetHousekeepers() {
-            return _unitOfWork.Query<Housekeeper>();
+    public class UnitOfWork : IUnitOfWork {
+        public IQueryable<T> Query<T>() {
+            return new List<T>().AsQueryable();
         }
     }
 }

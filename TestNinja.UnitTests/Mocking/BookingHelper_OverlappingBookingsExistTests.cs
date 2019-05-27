@@ -10,7 +10,7 @@ using TestNinja.Mocking;
 
 namespace TestNinja.UnitTests.Mocking {
     [TestFixture]
-    class BookingHelper_OverlappingBookingsExist_Tests {
+    class BookingHelper_OverlappingBookingsExistTests {
         private Booking _existingBooking;
         private Mock<IBookingRepository> _bookRepository;
 

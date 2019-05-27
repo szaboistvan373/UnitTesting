@@ -4,23 +4,24 @@ namespace TestNinja.Mocking.HouseKeeper {
     using System;
 
     namespace TestNinja.Mocking {
-        public class HousekeeperHelper {
-            private readonly IHouseKeeperRepository _houseKeeperRepository;
+        public class HousekeeperService {
+            private readonly IUnitOfWork _unitOfWork;
             private readonly IStatementGenerator _statementGenerator;
             private readonly IEmailSender _emailSender;
+            private readonly IXtraMessageBox _messageBox;
 
-            public HousekeeperHelper(IHouseKeeperRepository houseKeeperRepository = null,
-                IStatementGenerator statementGenerator = null, IEmailSender emailSender = null) {
-                _houseKeeperRepository = houseKeeperRepository ?? new HouseKeeperRepository();
-                _statementGenerator = statementGenerator ?? new StatementGenerator();
-                _emailSender = emailSender ?? new EmailSender();
+            public HousekeeperService(IUnitOfWork houseKeeperRepository, IStatementGenerator statementGenerator, IEmailSender emailSender, IXtraMessageBox messageBox) {
+                _unitOfWork = houseKeeperRepository;
+                _statementGenerator = statementGenerator;
+                _emailSender = emailSender;
+                _messageBox = messageBox;
             }
 
-            public bool SendStatementEmails(DateTime statementDate) {
-                var housekeepers = _houseKeeperRepository.GetHousekeepers();
+            public void SendStatementEmails(DateTime statementDate) {
+                var housekeepers = _unitOfWork.Query<Housekeeper>();
 
                 foreach (var housekeeper in housekeepers) {
-                    if (housekeeper.Email == null)
+                    if (String.IsNullOrWhiteSpace(housekeeper.Email))
                         continue;
 
                     var statementFilename =
@@ -37,24 +38,10 @@ namespace TestNinja.Mocking.HouseKeeper {
                             string.Format("Sandpiper Statement {0:yyyy-MM} {1}", statementDate, housekeeper.FullName));
                     }
                     catch (Exception e) {
-                        XtraMessageBox.Show(e.Message, string.Format("Email failure: {0}", emailAddress),
+                        _messageBox.Show(e.Message, string.Format("Email failure: {0}", emailAddress),
                             MessageBoxButtons.OK);
                     }
                 }
-                return true;
-            }
-
-            public enum MessageBoxButtons {
-                OK
-            }
-
-            public class XtraMessageBox {
-                public static void Show(string s, string housekeeperStatements, MessageBoxButtons ok) {
-                }
-            }
-
-            public class MainForm {
-                public bool HousekeeperStatementsSending { get; set; }
             }
 
             public class DateForm {
@@ -73,5 +60,19 @@ namespace TestNinja.Mocking.HouseKeeper {
                 OK
             }
         }
+
+        public enum MessageBoxButtons {
+            OK
+        }
+
+        public interface IXtraMessageBox {
+            void Show(string s, string housekeeperStatements, MessageBoxButtons ok);
+        }
+
+        public class XtraMessageBox : IXtraMessageBox {
+            public void Show(string s, string housekeeperStatements, MessageBoxButtons ok) {
+            }
+        }
+
     }
 }
