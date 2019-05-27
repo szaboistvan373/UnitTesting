@@ -4,31 +4,22 @@ using System.Linq;
 
 namespace TestNinja.Mocking {
     public interface IBookingRepository {
-        Booking GetOverlappingBooking(Booking booking);
+        IQueryable<Booking> GetActiveBookings(int? excludedBookingId = null);
     }
 
     public class BookingRepository : IBookingRepository {
-        private UnitOfWork _unitOfWork;
+        public IQueryable<Booking> GetActiveBookings(int? excludedBookingId = null) {
+            var _unitOfWork = new UnitOfWork();
 
-        public BookingRepository() {
-            _unitOfWork = new UnitOfWork();
-        }
-
-        public Booking GetOverlappingBooking(Booking booking) {
             var bookings =
                 _unitOfWork.Query<Booking>()
                     .Where(
-                        b => b.Id != booking.Id && b.Status != "Cancelled");
+                        b => b.Status != "Cancelled");
 
-            var overlappingBooking =
-                bookings.FirstOrDefault(
-                    b =>
-                        booking.ArrivalDate >= b.ArrivalDate
-                        && booking.ArrivalDate < b.DepartureDate
-                        || booking.DepartureDate > b.ArrivalDate
-                        && booking.DepartureDate <= b.DepartureDate);
+            if (excludedBookingId.HasValue)
+                bookings = bookings.Where(b => b.Id != excludedBookingId.Value);
 
-            return overlappingBooking;
+            return bookings;
         }
     }
 
@@ -37,7 +28,12 @@ namespace TestNinja.Mocking {
             if (booking.Status == "Cancelled")
                 return string.Empty;
 
-            var overlappingBooking = bookingRepository.GetOverlappingBooking(booking);
+            var activeBookings = bookingRepository.GetActiveBookings(booking.Id);
+
+            var overlappingBooking =
+                activeBookings.FirstOrDefault(
+                    b =>
+                        booking.ArrivalDate < b.DepartureDate && booking.DepartureDate > b.ArrivalDate);
 
             return overlappingBooking == null ? string.Empty : overlappingBooking.Reference;
         }
