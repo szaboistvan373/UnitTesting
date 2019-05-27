@@ -1,2 +1,2 @@
 # UnitTesting
-Best practices for unit testing
+Practicing unit testing best practices with NUnit and Moq.
